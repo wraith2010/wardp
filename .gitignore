@@ -2,3 +2,6 @@
 /war-iteration0/*.gitignore
 /war-iteration0/*.project
 /war-iteration0/.settings
+/war-iteration1/*.classpath
+/war-iteration1/*.project
+/war-iteration1/.settings
