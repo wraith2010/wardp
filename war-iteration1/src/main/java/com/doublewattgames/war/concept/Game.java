@@ -20,6 +20,8 @@ public class Game {
 	private int warCount = 0;
 	private int roundCount = 0;
 
+	private boolean purge = false;
+
 	public void addPlayer(Player player) {
 		getPlayers().add(player);
 	}
@@ -73,15 +75,7 @@ public class Game {
 
 	private void playOneRound(List<Card> wager) {
 
-		Map<Player, Card> map = new HashMap<>();
-
-		getPlayers().stream().forEach(player -> {
-			try {
-				map.put(player, player.topCard());
-			} catch (OutOfCardsException e1) {
-				return;
-			}
-		});
+		Map<Player, Card> map = collectOneCardFromEach();
 
 		Player topPlayer;
 		try {
@@ -91,17 +85,23 @@ public class Game {
 				topPlayer.accept(wager);
 			}
 		} catch (WarException warException) {
+
 			setWarCount(getWarCount() + 1);
 			if (wager == null) {
 				wager = new ArrayList<>();
 			}
 
 			for (Player player : getPlayers()) {
+				// if this the players last card they use it for aditional wars
+
+				if (player.isOutOfCards())
+					return;
+
 				try {
 					wager.addAll(player.topCard(3));
-				} catch (OutOfCardsException e) {
-					player.getDeck().getCards().clear();
-					return;
+				} catch (OutOfCardsException outOfCardsException) {
+					wager.addAll(outOfCardsException.getAdditionalCards());
+					player.getDeck().add(outOfCardsException.getLastCard());
 				}
 			}
 
@@ -109,6 +109,41 @@ public class Game {
 
 			playOneRound(wager);
 
+			if (isPurge()) {
+				purge();
+			}
+		}
+
+	}
+
+	private Map<Player, Card> collectOneCardFromEach() {
+
+		Map<Player, Card> map = new HashMap<>();
+
+		for (Player player : getPlayers()) {
+			try {
+				map.put(player, player.topCard());
+			} catch (OutOfCardsException outOfCardsException) {
+				map.put(player, outOfCardsException.getLastCard());
+			}
+		}
+
+		return map;
+	}
+
+	private void purge() {
+
+		int lowestRank = 100;
+
+		for (Player player : getPlayers()) {
+			Deck deck = player.getDeck();
+			int deckLowestRank = deck.lowestRank();
+			if (lowestRank > deckLowestRank)
+				lowestRank = deckLowestRank;
+		}
+
+		for (Player player : getPlayers()) {
+			player.getDeck().purge(lowestRank);
 		}
 
 	}
@@ -169,9 +204,17 @@ public class Game {
 
 	public void setRoundCount(int roundCount) throws BoredomException {
 
-		if (roundCount > 1000)
+		if (roundCount > 400)
 			throw new BoredomException();
 
 		this.roundCount = roundCount;
+	}
+
+	public boolean isPurge() {
+		return purge;
+	}
+
+	public void setPurge(boolean purge) {
+		this.purge = purge;
 	}
 }

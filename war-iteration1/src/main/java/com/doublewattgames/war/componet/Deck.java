@@ -3,6 +3,7 @@ package com.doublewattgames.war.componet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.doublewattgames.war.exception.OutOfCardsException;
 
@@ -27,10 +28,13 @@ public class Deck {
 	}
 
 	public Card topCard() throws OutOfCardsException {
-		if (getCards().isEmpty())
-			throw new OutOfCardsException();
 
-		return getCards().remove(0);
+		Card card = getCards().remove(0);
+
+		if (getCards().isEmpty())
+			throw new OutOfCardsException(card, null);
+
+		return card;
 	}
 
 	public List<Card> topCard(int x) throws OutOfCardsException {
@@ -38,14 +42,31 @@ public class Deck {
 		List<Card> cardsToReturn = new ArrayList<>();
 
 		for (; x > 0; x--) {
+			Card card = getCards().remove(0);
 			if (getCards().isEmpty()) {
-				throw new OutOfCardsException();
+				throw new OutOfCardsException(card, cardsToReturn);
 			}
-			cardsToReturn.add(getCards().remove(0));
+			cardsToReturn.add(card);
 		}
 
 		return cardsToReturn;
 
+	}
+
+	public int lowestRank() {
+
+		int lowestRank = 20;
+
+		for (Card card : getCards()) {
+			if (card.getRank() < lowestRank)
+				lowestRank = card.getRank();
+		}
+
+		return lowestRank;
+	}
+
+	public void purge(int rank) {
+		setCards(getCards().stream().filter(card -> card.getRank() > rank).collect(Collectors.toList()));
 	}
 
 	public List<Card> getCards() {
@@ -64,6 +85,11 @@ public class Deck {
 		getCards().stream().forEach(card -> stringBuffer.append(card));
 
 		return stringBuffer.toString();
+	}
+
+	public boolean isOutOfCards() {
+
+		return getCards().isEmpty();
 	}
 
 }

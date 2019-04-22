@@ -8,7 +8,8 @@ import com.doublewattgames.war.exception.BoredomException;
 
 public class TenThousdandGameTest {
 
-	private static final int LIMIT = 10000;
+	private static final int LIMIT = 100000;
+	private static final boolean PURGE = true;
 
 	@Test
 	public void multiGame() {
@@ -24,6 +25,8 @@ public class TenThousdandGameTest {
 			game.addPlayer(new Player("John"));
 			game.addPlayer(new Player("Jill"));
 
+			game.setPurge(PURGE);
+			
 			game.deal();
 
 			while (!game.isGameOver()) {
@@ -37,13 +40,14 @@ public class TenThousdandGameTest {
 
 			totalRoundCount += game.getRoundCount();
 			totalWarCount += game.getWarCount();
+			
 		}
 
 		System.out.println("Average Rounds:\t" + (totalRoundCount / LIMIT));
 		System.out.println("Averge War:\t" + (totalWarCount / LIMIT));
 		System.out.println(
 				String.format("Games ending in Boredom:\t%s percent", (((boredomCount / ((double) LIMIT)) * 100.00))));
-
+		
 	}
 
 }

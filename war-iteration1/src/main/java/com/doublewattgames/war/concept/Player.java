@@ -54,5 +54,9 @@ public class Player {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	public boolean isOutOfCards() {
+		return getDeck().isOutOfCards();
+	}
 
 }
